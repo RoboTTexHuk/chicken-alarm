@@ -54,9 +54,12 @@
     .header-inner{height:72px;display:flex;align-items:center;justify-content:center;}
     .content{padding-top:72px;}
     .card{background:#fff;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.08);}
+    .voice-btn.active{outline:2px solid #FFA93B;}
+    .preview-badge{font-size:11px;padding:2px 6px;border-radius:9999px;background:#FFE9C2;color:#704b2f;}
     .avatar{width:88px;height:88px;border-radius:9999px;overflow:hidden;border:3px solid #FFA93B;background:#FFF;}
     .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
     .no-overflow{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .break-2-lines{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;}
   </style>
 </head>
 <body class="no-scrollbar">
@@ -70,7 +73,6 @@
   <div class="content with-safe-bottom app-shell mx-auto">
     <main class="px-4 md:px-6 pb-6 overflow-y-auto no-scrollbar">
 
-      <!-- Avatar -->
       <section class="mb-5">
         <div class="flex items-center gap-4 md:gap-6">
           <div class="avatar"><img id="avatar_img" alt="Avatar" src=""></div>
@@ -94,7 +96,6 @@
         </div>
       </section>
 
-      <!-- Alarm -->
       <section id="alarm_tab" class="space-y-6">
         <div id="audio_unlock_card" class="card p-4">
           <p class="text-sm font-semibold mb-2">Tap to enable audio for iOS WebView.</p>
@@ -120,7 +121,11 @@
           </div>
         </div>
 
-        <!-- Removed ROOSTER VOICE picker -->
+        <div class="card p-6">
+          <h2 class="label text-2xl mb-4">ROOSTER VOICE</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="voices_grid"></div>
+          <div class="text-[11px] mt-2">Tip: tap the active card to preview (~3.5s).</div>
+        </div>
 
         <div class="flex flex-col gap-3 pt-2">
           <div class="flex items-center justify-between gap-2">
@@ -145,7 +150,6 @@
         </div>
       </section>
 
-      <!-- QUIZ -->
       <section id="quiz_tab" class="hidden space-y-6 mt-8">
         <div class="text-center p-2">
           <h2 class="label text-2xl md:text-3xl">WHAT ROOSTER ARE YOU?</h2>
@@ -227,7 +231,27 @@
         </div>
       </section>
 
-      <!-- Analytics -->
+      <section id="recording_tab" class="hidden space-y-6 text-center mt-8">
+        <h2 class="label text-2xl md:text-3xl">RECORD YOUR CROW</h2>
+        <div class="text-[11px]">Allow mic and tap “Enable Sound” first on iOS.</div>
+
+        <div class="card p-6 flex justify-center items-center h-48">
+          <canvas id="viz_canvas" class="w-full h-24"></canvas>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+          <button id="start_rec_btn" class="btn-text py-3 text-base bg-brandRed rounded-full flex items-center justify-center gap-2 no-highlight"><i class="fa-solid fa-microphone"></i><span class="no-overflow">Start</span></button>
+          <button id="stop_rec_btn" class="btn-text py-3 text-base bg-brandDark rounded-full flex items-center justify-center gap-2 no-highlight" disabled=""><i class="fa-solid fa-stop"></i><span class="no-overflow">Stop</span></button>
+          <button id="play_rec_btn" class="btn-text py-3 text-base bg-brandYellow text-brandDark rounded-full flex items-center justify-center gap-2 no-highlight" disabled=""><i class="fa-solid fa-play"></i><span class="no-overflow">Playback</span></button>
+          <button id="set_rec_as_alarm_btn" class="btn-text py-3 text-base bg-brandOrange rounded-full flex items-center justify-center gap-2 no-highlight" disabled=""><i class="fa-solid fa-bell"></i><span class="no-overflow">Use as alarm</span></button>
+        </div>
+        <div class="flex items-center justify-center gap-2">
+          <label class="text-xs flex items-center gap-2">
+            <input id="inapp_hint_toggle" type="checkbox" class="accent-brandOrange"> echoCancellation / noiseSuppression
+          </label>
+        </div>
+        <p id="mic_hint" class="text-xs font-semibold"></p>
+      </section>
+
       <section id="analytics_tab" class="hidden space-y-6 mt-8">
         <h2 class="label text-2xl md:text-3xl text-center">SLEEP ANALYTICS</h2>
         <div class="card p-4">
@@ -245,7 +269,6 @@
     </main>
   </div>
 
-  <!-- Alarm Overlay -->
   <div id="alarm_active_overlay" class="hidden fixed inset-0 bg-brandRed/90 z-50 flex flex-col items-center justify-center text-white p-8">
     <div><i class="fa-solid fa-sun text-8xl md:text-9xl"></i></div>
     <h2 class="title text-5xl md:text-6xl mt-8">WAKE UP!</h2>
@@ -256,7 +279,6 @@
     </div>
   </div>
 
-  <!-- Bottom Nav -->
   <nav class="fixed bottom-0 left-0 right-0 mx-auto h-[4.5rem] bg-white border-t border-gray-200 flex justify-around items-center shadow-inner-soft z-40">
     <button data-tab="alarm_tab" class="nav-btn text-brandOrange flex flex-col items-center justify-center text-sm w-full h-full no-highlight">
       <i class="fa-solid fa-bell text-2xl mb-1"></i>
@@ -266,6 +288,10 @@
       <i class="fa-solid fa-egg text-2xl mb-1"></i>
       <span class="label text-xs">QUIZ</span>
     </button>
+    <button data-tab="recording_tab" class="nav-btn text-gray-400 flex flex-col items-center justify-center text-sm w-full h-full no-highlight">
+      <i class="fa-solid fa-microphone-lines text-2xl mb-1"></i>
+      <span class="label text-xs">RECORD</span>
+    </button>
     <button data-tab="analytics_tab" class="nav-btn text-gray-400 flex flex-col items-center justify-center text-sm w-full h-full no-highlight">
       <i class="fa-solid fa-chart-pie text-2xl mb-1"></i>
       <span class="label text-xs">ANALYTICS</span>
@@ -273,10 +299,16 @@
   </nav>
 
   <script>
-    // Assets: используем один встроенный звук (первый из набора).
-    const ROOSTER_SRC = 'assets/audio/roosters/gromkiy-krik-vzroslogo-petuha.wav';
+    const ROOSTER_ASSETS = {
+      'gromkiy-krik-vzroslogo-petuha': 'assets/audio/roosters/gromkiy-krik-vzroslogo-petuha.wav',
+      'povtoryayuschiysya-krik-petuha': 'assets/audio/roosters/povtoryayuschiysya-krik-petuha.wav',
+      'krik-petuha-v-derevne': 'assets/audio/roosters/krik-petuha-v-derevne.wav',
+      'petuh-30746': 'assets/audio/roosters/petuh-30746.wav',
+      'zvonkogolosyiy-petuh': 'assets/audio/roosters/zvonkogolosyiy-petuh.wav',
+      'protyajnyiy-krik-petuha': 'assets/audio/roosters/protyajnyiy-krik-petuha.wav',
+    };
+    const ROOSTER_KEYS = Object.keys(ROOSTER_ASSETS);
 
-    // Local storage keys
     const LS_KEYS={ALARM:'chicken_alarm_settings',EVENTS:'chicken_alarm_events',QUIZ:'chicken_quiz_result',AVATAR:'chicken_avatar_b64'};
     const saveJSON=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
     const loadJSON=(k,f=null)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):f;}catch(e){return f;}};
@@ -350,97 +382,134 @@
       clr.addEventListener('click',()=>{localStorage.removeItem(LS_KEYS.AVATAR); loadAvatar();});
     }
 
-    // Alarm playback using single asset
-    let activePlayer=null;
-    function playLoop(volume){
-      const a=new Audio(ROOSTER_SRC);
-      a.loop=true; a.playsInline=true; a.volume=0;
-      a.play().catch(()=>{});
-      const fin=()=>{ a.volume=Math.min(volume,a.volume+0.08); if(a.volume<volume) requestAnimationFrame(fin); };
-      requestAnimationFrame(fin);
-      return {
-        stop:()=>{ const fout=()=>{ a.volume=Math.max(0,a.volume-0.08); if(a.volume>0) requestAnimationFrame(fout); else { try{a.pause();}catch(_){ } } }; requestAnimationFrame(fout); }
-      };
-    }
-    function stopActive(){ try{activePlayer?.stop();}catch(_){ } activePlayer=null; }
+    // Recording
+    let mediaStream=null, mediaRecorder=null, recordedChunks=[], recordedBlob=null, recordedUrl=null, analyser=null, vizRAF=null;
+    const vizCanvas=()=>document.getElementById('viz_canvas');
 
-    // Alarm settings/logic + countdown
+    function micConstraints(){
+      const enhance=document.getElementById('inapp_hint_toggle')?.checked;
+      return {audio:{echoCancellation:!!enhance,noiseSuppression:!!enhance,autoGainControl:!!enhance}};
+    }
+    function startVisualizer(stream){
+      const canvas=vizCanvas(); const ctx=canvas.getContext('2d');
+      function resize(){const r=canvas.getBoundingClientRect(); const dpr=window.devicePixelRatio||1; canvas.width=r.width*dpr; canvas.height=r.height*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);} resize(); window.addEventListener('resize',resize);
+      const AC=window.AudioContext||window.webkitAudioContext; const ac=audioCtx||new AC();
+      const source=ac.createMediaStreamSource(stream); analyser=ac.createAnalyser(); analyser.fftSize=512; source.connect(analyser);
+      const data=new Uint8Array(analyser.frequencyBinCount);
+      const draw=()=>{analyser.getByteTimeDomainData(data); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#FFA93B'; ctx.lineWidth=2.5; ctx.beginPath(); const step=data.length/(canvas.width||1); for(let x=0;x<canvas.width;x++){const v=data[Math.floor(x*step)]/128-1; const y=(canvas.height/2)+v*((canvas.height/2)-4); if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);} ctx.stroke(); vizRAF=requestAnimationFrame(draw);};
+      vizRAF=requestAnimationFrame(draw);
+    }
+    function stopVisualizer(){ if(vizRAF) cancelAnimationFrame(vizRAF); vizRAF=null; try{analyser?.disconnect();}catch(_){ } analyser=null; }
+
+    async function initMic(){
+      const hint=document.getElementById('mic_hint');
+      try{ await ensureAudio(); mediaStream=await navigator.mediaDevices.getUserMedia(micConstraints()); hint.textContent='Microphone ready.'; startVisualizer(mediaStream); return true; }
+      catch(e){ console.log('getUserMedia error', e.name, e.message); if(e.name==='NotAllowedError') hint.textContent='Microphone access denied. Enable in iOS Settings.'; else if(e.name==='SecurityError') hint.textContent='Blocked by iOS for this origin. Use http://localhost.'; else hint.textContent='Microphone error: '+(e.message||e.name); return false; }
+    }
+    function enableRecButtons(state){
+      document.getElementById('start_rec_btn').disabled=state!=='idle';
+      document.getElementById('stop_rec_btn').disabled=state!=='recording';
+      document.getElementById('play_rec_btn').disabled=!recordedUrl||state==='recording';
+      document.getElementById('set_rec_as_alarm_btn').disabled=!recordedUrl||state==='recording';
+    }
+    async function startRecording(){
+      if(!mediaStream){const ok=await initMic(); if(!ok) return;}
+      await ensureAudio(); recordedChunks=[];
+      const mimes=['audio/mp4','audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus']; let mime='';
+      for(const m of mimes){ if(window.MediaRecorder && MediaRecorder.isTypeSupported(m)){ mime=m; break; } }
+      if(!mime){ document.getElementById('mic_hint').textContent='Recording not supported on this iOS.'; return; }
+      mediaRecorder=new MediaRecorder(mediaStream,{mimeType:mime});
+      mediaRecorder.ondataavailable=e=>{ if(e.data && e.data.size) recordedChunks.push(e.data); };
+      mediaRecorder.onstop=()=>{ recordedBlob=new Blob(recordedChunks,{type:mime}); if(recordedUrl) URL.revokeObjectURL(recordedUrl); recordedUrl=URL.createObjectURL(recordedBlob); enableRecButtons('idle'); };
+      mediaRecorder.start(); enableRecButtons('recording');
+    }
+    function stopRecording(){ if(mediaRecorder && mediaRecorder.state==='recording'){ mediaRecorder.stop(); } stopVisualizer(); }
+    function playRecording(){ if(!recordedUrl) return; const a=new Audio(recordedUrl); a.playsInline=true; a.volume=parseFloat(document.getElementById('volume_slider').value||'0.9'); a.play().catch(()=>{}); }
+
+    // Voices
+    function humanizeKey(k){ return k.replace(/-/g,' ').replace(/\b\w/g, c=>c.toUpperCase()); }
+    function resolveRoosterSrc(key){
+      if(window.ROOSTER_OVERRIDES && window.ROOSTER_OVERRIDES[key]) return window.ROOSTER_OVERRIDES[key];
+      return ROOSTER_ASSETS[key];
+    }
+    function buildVoicesUI(){
+      const grid=document.getElementById('voices_grid'); grid.innerHTML='';
+      const allKeys=['random', ...ROOSTER_KEYS, 'user'];
+      allKeys.forEach((key, idx)=>{
+        const btn=document.createElement('button');
+        btn.className='voice-btn '+(idx===0?'active ':'')+'p-4 rounded-xl text-left '+(idx===0?'bg-brandYellow/40 border-2 border-brandOrange':'bg-gray-100')+' flex items-start justify-between no-highlight';
+        btn.dataset.voice=key;
+        let icon='<i class="fa-solid fa-crow text-xl mr-2"></i>';
+        let title=humanizeKey(key);
+        if(key==='random'){ icon='<i class="fa-solid fa-shuffle text-xl text-brandOrange mr-2"></i>'; title='Random'; }
+        if(key==='user'){ icon='<i class="fa-solid fa-user text-xl mr-2"></i>'; title='My recording'; }
+        btn.innerHTML=`<div class="min-w-0"><span>${icon}</span><span class="font-bold break-2-lines align-top">${title}</span></div><span class="preview-badge hidden">Preview…</span>`;
+        btn.addEventListener('click',()=>onVoiceClick(btn));
+        grid.appendChild(btn);
+      });
+    }
+    let previewAudio=null, previewBtn=null, previewTimeout=null;
+    function stopPreview(){ try{previewAudio?.pause();}catch(_){ } previewAudio=null; if(previewTimeout){clearTimeout(previewTimeout); previewTimeout=null;} if(previewBtn){previewBtn.querySelector('.preview-badge')?.classList.add('hidden');} previewBtn=null; }
+    function onVoiceClick(btn){
+      const wasActive = btn.classList.contains('active');
+      document.querySelectorAll('.voice-btn').forEach(b=>{
+        b.classList.remove('active','bg-brandYellow/40','border-brandOrange','border-2');
+        b.classList.add('bg-gray-100');
+        b.querySelector('.preview-badge')?.classList.add('hidden');
+      });
+      btn.classList.add('active','bg-brandYellow/40','border-brandOrange','border-2');
+      btn.classList.remove('bg-gray-100');
+      saveAlarmSettings(loadJSON(LS_KEYS.ALARM)?.enabled);
+      if(wasActive){ startPreviewForBtn(btn); } else { stopPreview(); }
+    }
+    function pickRandomPreset(){ return ROOSTER_KEYS[(Math.random()*ROOSTER_KEYS.length)|0]; }
+    function startPreviewForBtn(btn){
+      const voice=btn.dataset.voice;
+      let src=null;
+      if(voice==='random'){ src=resolveRoosterSrc(pickRandomPreset()); }
+      else if(voice==='user'){ if(!recordedUrl){ alert('Record a sound first in the “Record” tab.'); return; } src=recordedUrl; }
+      else{ src=resolveRoosterSrc(voice); }
+      const a=new Audio(src); a.playsInline=true; a.volume=0; a.play().catch(()=>{}); previewAudio=a; previewBtn=btn; btn.querySelector('.preview-badge')?.classList.remove('hidden');
+      const target=parseFloat(document.getElementById('volume_slider').value||'0.9');
+      const fin=()=>{ if(!previewAudio) return; previewAudio.volume=Math.min(target,previewAudio.volume+0.12); if(previewAudio.volume<target) requestAnimationFrame(fin); }; requestAnimationFrame(fin);
+      previewTimeout=setTimeout(()=>{ const fout=()=>{ if(!previewAudio) return; previewAudio.volume=Math.max(0,previewAudio.volume-0.12); if(previewAudio.volume>0) requestAnimationFrame(fout); else stopPreview(); }; requestAnimationFrame(fout); },3500);
+    }
+
+    // Alarm logic
+    let activePlayer=null;
+    function playPresetLoop(presetId,volume){
+      const make=(src)=>{ const a=new Audio(src); a.loop=true; a.playsInline=true; a.volume=0; a.play().catch(()=>{}); const fin=()=>{ a.volume=Math.min(volume,a.volume+0.08); if(a.volume<volume) requestAnimationFrame(fin); }; requestAnimationFrame(fin); return {stop:()=>{ const fout=()=>{ a.volume=Math.max(0,a.volume-0.08); if(a.volume>0) requestAnimationFrame(fout); else {try{a.pause();}catch(_){}} }; requestAnimationFrame(fout);} }; };
+      if(presetId==='user' && recordedUrl) return make(recordedUrl);
+      const src=resolveRoosterSrc(presetId); if(!src){ console.warn('No asset',presetId); return {stop:()=>{}}; }
+      return make(src);
+    }
+
     function formatHM(h,m){ return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
     function updateDisplayTime(){ document.getElementById('hours').textContent=String(document.getElementById('hour_slider').value).padStart(2,'0'); document.getElementById('minutes').textContent=String(document.getElementById('minute_slider').value).padStart(2,'0'); }
+    function getSelectedVoice(){ const btn=document.querySelector('.voice-btn.active'); return btn?btn.dataset.voice:'random'; }
     function saveAlarmSettings(enabled){
-      const s={hour:parseInt(document.getElementById('hour_slider').value,10),minute:parseInt(document.getElementById('minute_slider').value,10),volume:parseFloat(document.getElementById('volume_slider').value),repeat:document.getElementById('repeat_daily').checked,enabled:!!enabled};
+      const s={hour:parseInt(document.getElementById('hour_slider').value,10),minute:parseInt(document.getElementById('minute_slider').value,10),voice:getSelectedVoice(),volume:parseFloat(document.getElementById('volume_slider').value),repeat:document.getElementById('repeat_daily').checked,enabled:!!enabled};
       saveJSON(LS_KEYS.ALARM,s); return s;
     }
     function loadAlarmSettings(){
       const s=loadJSON(LS_KEYS.ALARM,null);
-      if(s){
-        document.getElementById('hour_slider').value=s.hour;
-        document.getElementById('minute_slider').value=s.minute;
-        updateDisplayTime();
-        document.getElementById('volume_slider').value=s.volume??0.9;
-        document.getElementById('repeat_daily').checked=!!s.repeat;
-        document.getElementById('alarm_status').textContent=s.enabled?`Alarm set for ${formatHM(s.hour,s.minute)}`:'No alarm set';
-        if(s.enabled){ startAlarmWatcher(); startCountdownTicker(); }
-      } else { updateDisplayTime(); }
+      if(s){ document.getElementById('hour_slider').value=s.hour; document.getElementById('minute_slider').value=s.minute; updateDisplayTime(); document.getElementById('volume_slider').value=s.volume??0.9; document.getElementById('repeat_daily').checked=!!s.repeat; document.getElementById('alarm_status').textContent=s.enabled?`Alarm set for ${formatHM(s.hour,s.minute)}`:'No alarm set'; if(s.enabled){ startAlarmWatcher(); startCountdownTicker(); } }
+      else { updateDisplayTime(); }
     }
 
     let alarmTimer=null, snoozeCount=0, currentEvent=null, lastTriggerKey=null;
     let countdownTimer=null;
 
     function startAlarmWatcher(){ if(alarmTimer) clearInterval(alarmTimer); alarmTimer=setInterval(checkAlarmTrigger,500); }
-    function checkAlarmTrigger(){
-      const s=loadJSON(LS_KEYS.ALARM); if(!s||!s.enabled) return;
-      const now=new Date(); const h=now.getHours(), m=now.getMinutes();
-      const key=`${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}-${h}-${m}`;
-      if(h===s.hour && m===s.minute && lastTriggerKey!==key){ lastTriggerKey=key; triggerAlarm(); }
-    }
+    function checkAlarmTrigger(){ const s=loadJSON(LS_KEYS.ALARM); if(!s||!s.enabled) return; const now=new Date(); const h=now.getHours(), m=now.getMinutes(); const key=`${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}-${h}-${m}`; if(h===s.hour && m===s.minute && lastTriggerKey!==key){ lastTriggerKey=key; triggerAlarm(); } }
+    async function triggerAlarm(){ const s=loadJSON(LS_KEYS.ALARM); if(!s) return; await ensureAudio(); const vol=parseFloat(document.getElementById('volume_slider').value||'0.9'); const preset=s.voice==='random'?pickRandomPreset():s.voice; activePlayer=playPresetLoop(preset,vol); document.getElementById('alarm_time_display').textContent=formatHM(s.hour,s.minute); document.getElementById('alarm_active_overlay').classList.remove('hidden'); snoozeCount=0; currentEvent={startedAt:Date.now(),targetTime:formatHM(s.hour,s.minute),turnedOffAt:null,snoozes:0}; if(!s.repeat){ s.enabled=false; saveJSON(LS_KEYS.ALARM,s); document.getElementById('alarm_status').textContent='No alarm set'; stopCountdownTicker(); } }
 
-    async function triggerAlarm(){
-      const s=loadJSON(LS_KEYS.ALARM); if(!s) return;
-      await ensureAudio();
-      const vol=parseFloat(document.getElementById('volume_slider').value||'0.9');
-      activePlayer=playLoop(vol);
-      document.getElementById('alarm_time_display').textContent=formatHM(s.hour,s.minute);
-      document.getElementById('alarm_active_overlay').classList.remove('hidden');
-      snoozeCount=0;
-      currentEvent={startedAt:Date.now(),targetTime:formatHM(s.hour,s.minute),turnedOffAt:null,snoozes:0};
-      if(!s.repeat){
-        s.enabled=false; saveJSON(LS_KEYS.ALARM,s);
-        document.getElementById('alarm_status').textContent='No alarm set'; stopCountdownTicker();
-      }
-    }
-
+    function stopActive(){ try{activePlayer?.stop();}catch(_){ } activePlayer=null; }
     function addEventToHistory(evt){ const list=loadJSON(LS_KEYS.EVENTS,[]); list.push(evt); saveJSON(LS_KEYS.EVENTS,list); }
 
-    function handleSnooze(){
-      const s=loadJSON(LS_KEYS.ALARM); if(!s) return;
-      if(snoozeCount>=3){ turnOffAlarm(); return; }
-      snoozeCount++; if(currentEvent) currentEvent.snoozes=snoozeCount;
-      stopActive(); document.getElementById('alarm_active_overlay').classList.add('hidden');
-      const d=new Date(); d.setMinutes(d.getMinutes()+5);
-      s.hour=d.getHours(); s.minute=d.getMinutes(); s.enabled=true;
-      saveJSON(LS_KEYS.ALARM,s);
-      document.getElementById('alarm_status').textContent=`Snoozed to ${formatHM(s.hour,s.minute)}`;
-      startCountdownTicker();
-    }
+    function handleSnooze(){ const s=loadJSON(LS_KEYS.ALARM); if(!s) return; if(snoozeCount>=3){ turnOffAlarm(); return; } snoozeCount++; if(currentEvent) currentEvent.snoozes=snoozeCount; stopActive(); document.getElementById('alarm_active_overlay').classList.add('hidden'); const d=new Date(); d.setMinutes(d.getMinutes()+5); s.hour=d.getHours(); s.minute=d.getMinutes(); s.enabled=true; saveJSON(LS_KEYS.ALARM,s); document.getElementById('alarm_status').textContent=`Snoozed to ${formatHM(s.hour,s.minute)}`; startCountdownTicker(); }
 
-    function turnOffAlarm(){
-      stopActive();
-      document.getElementById('alarm_active_overlay').classList.add('hidden');
-      if(currentEvent){ currentEvent.turnedOffAt=Date.now(); addEventToHistory(currentEvent); currentEvent=null; }
-      const s=loadJSON(LS_KEYS.ALARM);
-      if(s){
-        if(s.repeat){
-          document.getElementById('alarm_status').textContent=`Alarm set for ${formatHM(s.hour,s.minute)}`;
-          startCountdownTicker();
-        }else{
-          s.enabled=false; saveJSON(LS_KEYS.ALARM,s);
-          document.getElementById('alarm_status').textContent='No alarm set';
-          stopCountdownTicker();
-        }
-      }
-      renderCharts();
-    }
+    function turnOffAlarm(){ stopActive(); document.getElementById('alarm_active_overlay').classList.add('hidden'); if(currentEvent){ currentEvent.turnedOffAt=Date.now(); addEventToHistory(currentEvent); currentEvent=null; } const s=loadJSON(LS_KEYS.ALARM); if(s){ if(s.repeat){ document.getElementById('alarm_status').textContent=`Alarm set for ${formatHM(s.hour,s.minute)}`; startCountdownTicker(); } else { s.enabled=false; saveJSON(LS_KEYS.ALARM,s); document.getElementById('alarm_status').textContent='No alarm set'; stopCountdownTicker(); } } renderCharts(); }
 
     // Countdown helpers
     function nextOccurrence(hour, minute){
@@ -479,25 +548,29 @@
       label.classList.add('hidden');
     }
 
-    // Analytics per minute
+    // Analytics with per-minute aggregation
     function pad2(n){ return String(n).padStart(2,'0'); }
-    function keyMinute(dt){ return `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`; }
+    function keyMinute(dt){
+      return `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+    }
     function minsOfDay(dt){ return dt.getHours()*60 + dt.getMinutes(); }
 
     function renderCharts(){
       const events=loadJSON(LS_KEYS.EVENTS,[]);
+      // Aggregate per-minute buckets
       const sleepBuckets = new Map(); // key => minutes slept
       const offBuckets = new Map();   // key => minutes of day when turned off
 
       events.forEach(evt=>{
         const start = new Date(evt.startedAt);
-        const k = keyMinute(start);
+        const k = keyMinute(start); // minute resolution by start time
         if(evt.turnedOffAt){
           const end = new Date(evt.turnedOffAt);
           const minutes = Math.max(1, Math.round((end - start)/60000));
           sleepBuckets.set(k, (sleepBuckets.get(k)||0) + minutes);
           offBuckets.set(k, minsOfDay(end));
         } else {
+          // cancel: keep the minute bucket but zero duration (optional)
           if(!sleepBuckets.has(k)) sleepBuckets.set(k, 0);
         }
       });
@@ -508,7 +581,7 @@
       Highcharts.chart('sleep_chart_container',{
         chart:{ type:'column', backgroundColor:'transparent' },
         title:{ text:null }, credits:{ enabled:false }, legend:{ enabled:false },
-        xAxis:{ categories: sleepKeys, labels:{ rotation:0, style:{ fontSize:'10px' } }, tickInterval: Math.max(1, Math.floor(sleepKeys.length/8)), lineColor:'#e0e0e0' },
+        xAxis:{ categories: sleepKeys, labels:{ rotation: 0, style:{ fontSize:'10px' } }, tickInterval: Math.max(1, Math.floor(sleepKeys.length/8)), lineColor:'#e0e0e0' },
         yAxis:{ title:{ text:'Minutes' }, gridLineColor:'#f0f0f0', min:0 },
         series:[{ name:'Sleep', data: sleepKeys.map(k=>sleepBuckets.get(k)), color:'#FFA93B', borderRadius:3 }],
         tooltip:{ formatter(){ return `${this.x}<br/>Sleep: <b>${this.y} min</b>`; } }
@@ -517,7 +590,7 @@
       Highcharts.chart('turn_off_chart_container',{
         chart:{ type:'spline', backgroundColor:'transparent' },
         title:{ text:null }, credits:{ enabled:false }, legend:{ enabled:false },
-        xAxis:{ categories: offKeys, labels:{ rotation:0, style:{ fontSize:'10px' } }, tickInterval: Math.max(1, Math.floor(offKeys.length/8)), lineColor:'#e0e0e0' },
+        xAxis:{ categories: offKeys, labels:{ rotation: 0, style:{ fontSize:'10px' } }, tickInterval: Math.max(1, Math.floor(offKeys.length/8)), lineColor:'#e0e0e0' },
         yAxis:{ title:{ text:'Minutes of day (0–1440)' }, min:0, max:1440, tickInterval:240,
           labels:{ formatter(){ return `${Math.round(this.value)}m`; } }, gridLineColor:'#f0f0f0' },
         series:[{ name:'Turn-off time', data: offKeys.map(k=>offBuckets.get(k)), color:'#FF6B6B' }],
@@ -548,7 +621,7 @@
     }
 
     // Tabs — Analytics доступна сразу
-    const tabs=['alarm_tab','quiz_tab','analytics_tab'];
+    const tabs=['alarm_tab','quiz_tab','recording_tab','analytics_tab'];
     function switchTab(id){
       tabs.forEach(t=>document.getElementById(t).classList.toggle('hidden', t!==id));
       document.querySelectorAll('.nav-btn').forEach(b=>{
@@ -558,6 +631,9 @@
       });
       if(id==='analytics_tab') renderCharts();
     }
+
+    // Build voices
+    function setDefaultVoiceSelection(){ buildVoicesUI(); }
 
     // Init
     document.addEventListener('DOMContentLoaded',()=>{
@@ -572,7 +648,8 @@
       document.getElementById('volume_slider').addEventListener('input',()=>{ if(masterGain) masterGain.gain.value=parseFloat(document.getElementById('volume_slider').value); saveAlarmSettings(loadJSON(LS_KEYS.ALARM)?.enabled); });
       updateDisplayTime();
 
-      // Alarm buttons
+      setDefaultVoiceSelection();
+
       document.getElementById('set_alarm_btn').addEventListener('click',()=>{
         const s=saveAlarmSettings(true);
         document.getElementById('alarm_status').textContent=`Alarm set for ${formatHM(s.hour,s.minute)}`;
@@ -587,7 +664,7 @@
         if(alarmTimer){ clearInterval(alarmTimer); alarmTimer=null; }
         stopCountdownTicker();
 
-        // Событие cancel
+        // Запишем событие "cancel" (без turnedOffAt)
         const cancelEvt={
           startedAt: Date.now(),
           targetTime: sPrev ? formatHM(sPrev.hour, sPrev.minute) : null,
@@ -596,23 +673,31 @@
           type: 'cancel'
         };
         addEventToHistory(cancelEvt);
+
         renderCharts();
         switchTab('analytics_tab');
       });
 
-      // Overlay
       document.getElementById('snooze_btn').addEventListener('click',handleSnooze);
       document.getElementById('turn_off_btn').addEventListener('click',turnOffAlarm);
 
-      // Quiz
+      document.getElementById('start_rec_btn').addEventListener('click',startRecording);
+      document.getElementById('stop_rec_btn').addEventListener('click',stopRecording);
+      document.getElementById('play_rec_btn').addEventListener('click',playRecording);
+      document.getElementById('set_rec_as_alarm_btn').addEventListener('click',()=>{
+        const btn = Array.from(document.querySelectorAll('.voice-btn')).find(b=>b.dataset.voice==='user');
+        if(btn) onVoiceClick(btn);
+        saveAlarmSettings(loadJSON(LS_KEYS.ALARM)?.enabled);
+        switchTab('alarm_tab');
+      });
+      enableRecButtons('idle');
+
       document.getElementById('show_quiz_result_btn').addEventListener('click',()=>{
         const res=computeQuizResult(); if(!res){ alert('Please answer all 5 questions.'); return; } showQuizResult(res);
       });
 
-      // Analytics
       document.getElementById('clear_history_btn').addEventListener('click',()=>{ if(confirm('Clear all history?')) clearHistory(); });
 
-      // Default tab
       loadAlarmSettings();
       switchTab('alarm_tab');
     });
