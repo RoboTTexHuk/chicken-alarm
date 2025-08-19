@@ -1,0 +1,621 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Chicken Alarm -- iOS InAppWebView</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandYellow: "#FFD43B",
+            brandOrange: "#FFA93B",
+            brandRed: "#FF6B6B",
+            brandCream: "#FFF8E1",
+            brandDark: "#3A2F2F"
+          },
+          fontFamily: {
+            display: ["'Luckiest Guy'", "system-ui", "sans-serif"],
+            sans: ["Inter", "system-ui", "sans-serif"]
+          },
+          boxShadow: {
+            soft: "0 4px 16px rgba(0,0,0,0.08)",
+            "inner-soft": "inset 0 2px 8px rgba(0,0,0,0.08)"
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js" crossorigin="anonymous"></script>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Luckiest+Guy&amp;display=swap" rel="stylesheet">
+
+  <style>
+    html,body{height:100%;}
+    body{background:#FFF8E1;color:#3A2F2F;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+    ::-webkit-scrollbar{display:none;}
+    .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
+    .app-shell{width:100%;max-width:860px;}
+    .with-safe-bottom{padding-bottom:calc(4.5rem + env(safe-area-inset-bottom));}
+    .no-highlight{-webkit-tap-highlight-color:transparent;}
+    .title{font-family:'Luckiest Guy',system-ui,sans-serif;letter-spacing:.5px;}
+    .label{font-family:'Luckiest Guy',system-ui,sans-serif;letter-spacing:.3px;}
+    .digits{font-family:'Luckiest Guy',system-ui,sans-serif;letter-spacing:1px;}
+    .btn-text{font-family:'Luckiest Guy',system-ui,sans-serif;letter-spacing:.2px;color:#fff!important;}
+    h1.title{font-size:clamp(32px,5.2vw,56px);line-height:1.02;margin:0;}
+    .digits{font-size:clamp(48px,8vw,88px);line-height:1;}
+    .fixed-header{position:fixed;top:0;left:0;right:0;z-index:50;background:#FFF8E1;padding:env(safe-area-inset-top) 0 0 0;border-bottom:1px solid #eadfb8;}
+    .header-inner{height:72px;display:flex;align-items:center;justify-content:center;}
+    .content{padding-top:72px;}
+    .card{background:#fff;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.08);}
+    .avatar{width:88px;height:88px;border-radius:9999px;overflow:hidden;border:3px solid #FFA93B;background:#FFF;}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+    .no-overflow{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  </style>
+</head>
+<body class="no-scrollbar">
+
+  <header class="fixed-header">
+    <div class="header-inner app-shell mx-auto px-4">
+      <h1 class="title">CHICKEN ALARM</h1>
+    </div>
+  </header>
+
+  <div class="content with-safe-bottom app-shell mx-auto">
+    <main class="px-4 md:px-6 pb-6 overflow-y-auto no-scrollbar">
+
+      <!-- Avatar -->
+      <section class="mb-5">
+        <div class="flex items-center gap-4 md:gap-6">
+          <div class="avatar"><img id="avatar_img" alt="Avatar" src=""></div>
+          <div class="flex-1">
+            <div class="label text-xl md:text-2xl">Your profile</div>
+            <div class="mt-2 flex gap-2 flex-wrap">
+              <label class="btn-text bg-brandOrange rounded-full px-3 py-2 cursor-pointer flex items-center gap-2 no-highlight">
+                <i class="fa-solid fa-image"></i> <span class="no-overflow">Gallery</span>
+                <input id="avatar_gallery_input" type="file" accept="image/*" class="hidden">
+              </label>
+              <label class="btn-text bg-brandRed rounded-full px-3 py-2 cursor-pointer flex items-center gap-2 no-highlight">
+                <i class="fa-solid fa-camera"></i> <span class="no-overflow">Camera</span>
+                <input id="avatar_camera_input" type="file" accept="image/*" capture="environment" class="hidden">
+              </label>
+              <button id="avatar_clear_btn" class="btn-text bg-gray-700 rounded-full px-3 py-2 no-highlight">
+                <i class="fa-solid fa-trash"></i> <span class="no-overflow">Clear</span>
+              </button>
+            </div>
+            <div class="text-[11px] mt-1">Avatar is stored locally.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Alarm -->
+      <section id="alarm_tab" class="space-y-6">
+        <div id="audio_unlock_card" class="card p-4">
+          <p class="text-sm font-semibold mb-2">Tap to enable audio for iOS WebView.</p>
+          <button id="enable_audio_btn" class="btn-text w-full py-3 rounded-xl bg-brandOrange no-highlight">Enable Sound</button>
+          <div class="text-[11px] mt-2">If audio fails later, tap again.</div>
+        </div>
+
+        <div class="card p-6 text-center" style="background:#FFF2BF">
+          <div class="digits mb-4 select-none"><span id="hours">07</span>:<span id="minutes">30</span></div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold">Hours</label>
+              <input type="range" id="hour_slider" min="0" max="23" value="7" class="w-full accent-brandOrange">
+            </div>
+            <div>
+              <label class="text-xs font-semibold">Minutes</label>
+              <input type="range" id="minute_slider" min="0" max="59" value="30" class="w-full accent-brandOrange">
+            </div>
+          </div>
+          <div class="mt-4 flex items-center justify-center gap-3">
+            <label class="text-sm font-semibold">Volume</label>
+            <input type="range" id="volume_slider" min="0" max="1" step="0.01" value="0.9" class="w-2/3 md:w-1/2 accent-brandOrange">
+          </div>
+        </div>
+
+        <!-- Removed ROOSTER VOICE picker -->
+
+        <div class="flex flex-col gap-3 pt-2">
+          <div class="flex items-center justify-between gap-2">
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" id="repeat_daily" class="accent-brandOrange">
+              <span class="font-semibold">Repeat daily</span>
+            </label>
+            <div class="flex flex-col items-end">
+              <span id="alarm_status" class="text-xs font-semibold">No alarm set</span>
+              <span id="countdown_label" class="text-[11px] font-semibold text-gray-600 hidden">Countdown: 00:00:00</span>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button id="set_alarm_btn" class="btn-text flex-1 py-4 text-2xl bg-brandRed rounded-full shadow-lg no-highlight">
+              <i class="fa-solid fa-bell"></i> <span class="no-overflow">Set Alarm</span>
+            </button>
+            <button id="cancel_alarm_btn" class="btn-text px-5 py-4 text-lg bg-gray-700 rounded-full shadow no-highlight">
+              <span class="no-overflow">Cancel</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUIZ -->
+      <section id="quiz_tab" class="hidden space-y-6 mt-8">
+        <div class="text-center p-2">
+          <h2 class="label text-2xl md:text-3xl">WHAT ROOSTER ARE YOU?</h2>
+          <p class="text-sm font-semibold mt-1">Answer 5 quick questions.</p>
+        </div>
+        <div class="space-y-4">
+          <div class="card p-6 space-y-3">
+            <p class="label text-xl">1. The sun is rising. First thought:</p>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q1" value="angry" class="mr-3 accent-brandOrange"> Wake everyone up!
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q1" value="free" class="mr-3 accent-brandOrange"> Five more minutes…
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q1" value="cheerful" class="mr-3 accent-brandOrange"> What adventures await?
+            </label>
+          </div>
+          <div class="card p-6 space-y-3">
+            <p class="label text-xl">2. A fox is near the henhouse. You:</p>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q2" value="angry" class="mr-3 accent-brandOrange"> Crow as loud as possible!
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q2" value="free" class="mr-3 accent-brandOrange"> Gather the flock and hide.
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q2" value="cheerful" class="mr-3 accent-brandOrange"> Try to reason with the fox.
+            </label>
+          </div>
+          <div class="card p-6 space-y-3">
+            <p class="label text-xl">3. Breakfast:</p>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q3" value="angry" class="mr-3 accent-brandOrange"> Strong coffee
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q3" value="cheerful" class="mr-3 accent-brandOrange"> Smoothie and fruit
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q3" value="free" class="mr-3 accent-brandOrange"> Whatever’s around
+            </label>
+          </div>
+          <div class="card p-6 space-y-3">
+            <p class="label text-xl">4. Ideal morning pace:</p>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q4" value="angry" class="mr-3 accent-brandOrange"> Fast and focused
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q4" value="cheerful" class="mr-3 accent-brandOrange"> Playful and upbeat
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q4" value="free" class="mr-3 accent-brandOrange"> Slow and free-flowing
+            </label>
+          </div>
+          <div class="card p-6 space-y-3">
+            <p class="label text-xl">5. Pick a feather color:</p>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q5" value="cheerful" class="mr-3 accent-brandOrange"> Rainbow 🌈
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q5" value="angry" class="mr-3 accent-brandOrange"> Red 🔥
+            </label>
+            <label class="flex items-center p-3 rounded-lg bg-brandYellow/30 hover:bg-brandYellow/50">
+              <input type="radio" name="q5" value="free" class="mr-3 accent-brandOrange"> White 🕊️
+            </label>
+          </div>
+        </div>
+        <button id="show_quiz_result_btn" class="btn-text w-full mt-2 py-3 text-xl bg-brandOrange rounded-full no-highlight">Show result</button>
+
+        <div id="quiz_result_card" class="hidden card p-5">
+          <div class="flex items-center gap-3">
+            <div id="quiz_emoji" class="text-3xl">🐓</div>
+            <div>
+              <div id="quiz_title" class="label text-2xl">You are a Cheerful Rooster!</div>
+              <div id="quiz_desc" class="text-sm font-semibold">Optimistic, you brighten everyone’s morning.</div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs font-semibold" id="quiz_saved_hint"></div>
+        </div>
+      </section>
+
+      <!-- Analytics -->
+      <section id="analytics_tab" class="hidden space-y-6 mt-8">
+        <h2 class="label text-2xl md:text-3xl text-center">SLEEP ANALYTICS</h2>
+        <div class="card p-4">
+          <h3 class="label text-xl mb-2">Sleep duration (minutes)</h3>
+          <div id="sleep_chart_container" class="w-full h-64"></div>
+        </div>
+        <div class="card p-4">
+          <h3 class="label text-xl mb-2">Alarm turn-off time (minutes of day)</h3>
+          <div id="turn_off_chart_container" class="w-full h-64"></div>
+        </div>
+        <div class="text-center pt-1">
+          <button id="clear_history_btn" class="btn-text text-sm px-4 py-2 bg-gray-700 rounded-full no-highlight">Clear history</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Alarm Overlay -->
+  <div id="alarm_active_overlay" class="hidden fixed inset-0 bg-brandRed/90 z-50 flex flex-col items-center justify-center text-white p-8">
+    <div><i class="fa-solid fa-sun text-8xl md:text-9xl"></i></div>
+    <h2 class="title text-5xl md:text-6xl mt-8">WAKE UP!</h2>
+    <p class="label text-2xl mt-2" id="alarm_time_display">07:30</p>
+    <div class="absolute bottom-10 left-6 right-6 md:left-12 md:right-12 space-y-4" style="padding-bottom: env(safe-area-inset-bottom);">
+      <button id="snooze_btn" class="btn-text w-full py-4 text-2xl bg-white/30 rounded-full no-highlight">Snooze (5 min)</button>
+      <button id="turn_off_btn" class="btn-text w-full py-4 text-2xl bg-white text-brandRed rounded-full no-highlight">Turn off</button>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="fixed bottom-0 left-0 right-0 mx-auto h-[4.5rem] bg-white border-t border-gray-200 flex justify-around items-center shadow-inner-soft z-40">
+    <button data-tab="alarm_tab" class="nav-btn text-brandOrange flex flex-col items-center justify-center text-sm w-full h-full no-highlight">
+      <i class="fa-solid fa-bell text-2xl mb-1"></i>
+      <span class="label text-xs">ALARM</span>
+    </button>
+    <button data-tab="quiz_tab" class="nav-btn text-gray-400 flex flex-col items-center justify-center text-sm w-full h-full no-highlight">
+      <i class="fa-solid fa-egg text-2xl mb-1"></i>
+      <span class="label text-xs">QUIZ</span>
+    </button>
+    <button data-tab="analytics_tab" class="nav-btn text-gray-400 flex flex-col items-center justify-center text-sm w-full h-full no-highlight">
+      <i class="fa-solid fa-chart-pie text-2xl mb-1"></i>
+      <span class="label text-xs">ANALYTICS</span>
+    </button>
+  </nav>
+
+  <script>
+    // Assets: используем один встроенный звук (первый из набора).
+    const ROOSTER_SRC = 'assets/audio/roosters/gromkiy-krik-vzroslogo-petuha.wav';
+
+    // Local storage keys
+    const LS_KEYS={ALARM:'chicken_alarm_settings',EVENTS:'chicken_alarm_events',QUIZ:'chicken_quiz_result',AVATAR:'chicken_avatar_b64'};
+    const saveJSON=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+    const loadJSON=(k,f=null)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):f;}catch(e){return f;}};
+
+    // Audio unlock
+    let audioCtx=null, masterGain=null, unlockTagAudio=null;
+    async function ensureAudio(){
+      if(!audioCtx){
+        const AC=window.AudioContext||window.webkitAudioContext;
+        audioCtx=new AC();
+        masterGain=audioCtx.createGain();
+        masterGain.gain.value=parseFloat(document.getElementById('volume_slider').value||'0.9');
+        masterGain.connect(audioCtx.destination);
+      }
+      if(audioCtx.state==='suspended'){
+        try{await audioCtx.resume();}catch(e){}
+      }
+      return audioCtx.state!=='suspended';
+    }
+    function setupAudioUnlock(){
+      const card=document.getElementById('audio_unlock_card');
+      const btn=document.getElementById('enable_audio_btn');
+      card.classList.remove('hidden');
+      btn.onclick=async()=>{
+        await ensureAudio();
+        if(!unlockTagAudio){
+          unlockTagAudio=new Audio();
+          unlockTagAudio.muted=true; unlockTagAudio.playsInline=true;
+          try{ await unlockTagAudio.play(); }catch(_){}
+        }
+        if(audioCtx?.state==='running'){ card.classList.add('hidden'); }
+      };
+    }
+
+    // Avatar
+    function loadAvatar(){
+      const b64=localStorage.getItem(LS_KEYS.AVATAR);
+      const img=document.getElementById('avatar_img');
+      if(b64){img.src=b64;}
+      else{
+        img.src='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88"><rect width="88" height="88" fill="#FFF8E1"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="28" font-family="Arial">🐓</text></svg>');
+      }
+    }
+    function fileToCircleDataUrl(file){
+      return new Promise((resolve,reject)=>{
+        const fr=new FileReader();
+        fr.onload=()=>{
+          const img=new Image();
+          img.onload=()=>{
+            const size=400,canvas=document.createElement('canvas'); canvas.width=size; canvas.height=size;
+            const ctx=canvas.getContext('2d');
+            ctx.clearRect(0,0,size,size);
+            ctx.save(); ctx.beginPath(); ctx.arc(size/2,size/2,size/2,0,Math.PI*2); ctx.closePath(); ctx.clip();
+            const iw=img.naturalWidth, ih=img.naturalHeight, s=Math.max(size/iw,size/ih);
+            const nw=iw*s, nh=ih*s, dx=(size-nw)/2, dy=(size-nh)/2;
+            ctx.drawImage(img,dx,dy,nw,nh); ctx.restore();
+            resolve(canvas.toDataURL('image/jpeg',0.9));
+          };
+          img.onerror=reject; img.src=fr.result;
+        };
+        fr.onerror=reject; fr.readAsDataURL(file);
+      });
+    }
+    function setupAvatarInputs(){
+      const g=document.getElementById('avatar_gallery_input');
+      const c=document.getElementById('avatar_camera_input');
+      const clr=document.getElementById('avatar_clear_btn');
+      const handle=async(f)=>{if(!f)return; try{const b64=await fileToCircleDataUrl(f); localStorage.setItem(LS_KEYS.AVATAR,b64); loadAvatar();}catch(e){alert('Failed to load image.');}};
+      g.addEventListener('change',e=>handle(e.target.files?.[0]));
+      c.addEventListener('change',e=>handle(e.target.files?.[0]));
+      clr.addEventListener('click',()=>{localStorage.removeItem(LS_KEYS.AVATAR); loadAvatar();});
+    }
+
+    // Alarm playback using single asset
+    let activePlayer=null;
+    function playLoop(volume){
+      const a=new Audio(ROOSTER_SRC);
+      a.loop=true; a.playsInline=true; a.volume=0;
+      a.play().catch(()=>{});
+      const fin=()=>{ a.volume=Math.min(volume,a.volume+0.08); if(a.volume<volume) requestAnimationFrame(fin); };
+      requestAnimationFrame(fin);
+      return {
+        stop:()=>{ const fout=()=>{ a.volume=Math.max(0,a.volume-0.08); if(a.volume>0) requestAnimationFrame(fout); else { try{a.pause();}catch(_){ } } }; requestAnimationFrame(fout); }
+      };
+    }
+    function stopActive(){ try{activePlayer?.stop();}catch(_){ } activePlayer=null; }
+
+    // Alarm settings/logic + countdown
+    function formatHM(h,m){ return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+    function updateDisplayTime(){ document.getElementById('hours').textContent=String(document.getElementById('hour_slider').value).padStart(2,'0'); document.getElementById('minutes').textContent=String(document.getElementById('minute_slider').value).padStart(2,'0'); }
+    function saveAlarmSettings(enabled){
+      const s={hour:parseInt(document.getElementById('hour_slider').value,10),minute:parseInt(document.getElementById('minute_slider').value,10),volume:parseFloat(document.getElementById('volume_slider').value),repeat:document.getElementById('repeat_daily').checked,enabled:!!enabled};
+      saveJSON(LS_KEYS.ALARM,s); return s;
+    }
+    function loadAlarmSettings(){
+      const s=loadJSON(LS_KEYS.ALARM,null);
+      if(s){
+        document.getElementById('hour_slider').value=s.hour;
+        document.getElementById('minute_slider').value=s.minute;
+        updateDisplayTime();
+        document.getElementById('volume_slider').value=s.volume??0.9;
+        document.getElementById('repeat_daily').checked=!!s.repeat;
+        document.getElementById('alarm_status').textContent=s.enabled?`Alarm set for ${formatHM(s.hour,s.minute)}`:'No alarm set';
+        if(s.enabled){ startAlarmWatcher(); startCountdownTicker(); }
+      } else { updateDisplayTime(); }
+    }
+
+    let alarmTimer=null, snoozeCount=0, currentEvent=null, lastTriggerKey=null;
+    let countdownTimer=null;
+
+    function startAlarmWatcher(){ if(alarmTimer) clearInterval(alarmTimer); alarmTimer=setInterval(checkAlarmTrigger,500); }
+    function checkAlarmTrigger(){
+      const s=loadJSON(LS_KEYS.ALARM); if(!s||!s.enabled) return;
+      const now=new Date(); const h=now.getHours(), m=now.getMinutes();
+      const key=`${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}-${h}-${m}`;
+      if(h===s.hour && m===s.minute && lastTriggerKey!==key){ lastTriggerKey=key; triggerAlarm(); }
+    }
+
+    async function triggerAlarm(){
+      const s=loadJSON(LS_KEYS.ALARM); if(!s) return;
+      await ensureAudio();
+      const vol=parseFloat(document.getElementById('volume_slider').value||'0.9');
+      activePlayer=playLoop(vol);
+      document.getElementById('alarm_time_display').textContent=formatHM(s.hour,s.minute);
+      document.getElementById('alarm_active_overlay').classList.remove('hidden');
+      snoozeCount=0;
+      currentEvent={startedAt:Date.now(),targetTime:formatHM(s.hour,s.minute),turnedOffAt:null,snoozes:0};
+      if(!s.repeat){
+        s.enabled=false; saveJSON(LS_KEYS.ALARM,s);
+        document.getElementById('alarm_status').textContent='No alarm set'; stopCountdownTicker();
+      }
+    }
+
+    function addEventToHistory(evt){ const list=loadJSON(LS_KEYS.EVENTS,[]); list.push(evt); saveJSON(LS_KEYS.EVENTS,list); }
+
+    function handleSnooze(){
+      const s=loadJSON(LS_KEYS.ALARM); if(!s) return;
+      if(snoozeCount>=3){ turnOffAlarm(); return; }
+      snoozeCount++; if(currentEvent) currentEvent.snoozes=snoozeCount;
+      stopActive(); document.getElementById('alarm_active_overlay').classList.add('hidden');
+      const d=new Date(); d.setMinutes(d.getMinutes()+5);
+      s.hour=d.getHours(); s.minute=d.getMinutes(); s.enabled=true;
+      saveJSON(LS_KEYS.ALARM,s);
+      document.getElementById('alarm_status').textContent=`Snoozed to ${formatHM(s.hour,s.minute)}`;
+      startCountdownTicker();
+    }
+
+    function turnOffAlarm(){
+      stopActive();
+      document.getElementById('alarm_active_overlay').classList.add('hidden');
+      if(currentEvent){ currentEvent.turnedOffAt=Date.now(); addEventToHistory(currentEvent); currentEvent=null; }
+      const s=loadJSON(LS_KEYS.ALARM);
+      if(s){
+        if(s.repeat){
+          document.getElementById('alarm_status').textContent=`Alarm set for ${formatHM(s.hour,s.minute)}`;
+          startCountdownTicker();
+        }else{
+          s.enabled=false; saveJSON(LS_KEYS.ALARM,s);
+          document.getElementById('alarm_status').textContent='No alarm set';
+          stopCountdownTicker();
+        }
+      }
+      renderCharts();
+    }
+
+    // Countdown helpers
+    function nextOccurrence(hour, minute){
+      const now=new Date();
+      let t=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hour,minute,0,0);
+      if(t<=now) t=new Date(t.getTime()+24*3600*1000);
+      return t;
+    }
+    function formatDuration(ms){
+      if(ms<0) ms=0;
+      const s=Math.floor(ms/1000);
+      const hh=String(Math.floor(s/3600)).padStart(2,'0');
+      const mm=String(Math.floor((s%3600)/60)).padStart(2,'0');
+      const ss=String(s%60).padStart(2,'0');
+      return `${hh}:${mm}:${ss}`;
+    }
+    function startCountdownTicker(){
+      const label=document.getElementById('countdown_label');
+      const s=loadJSON(LS_KEYS.ALARM);
+      if(!s || !s.enabled){ stopCountdownTicker(); return; }
+      label.classList.remove('hidden');
+      const compute=()=>{
+        const target=nextOccurrence(s.hour, s.minute);
+        const remaining=target - new Date();
+        label.textContent = `Countdown: ${formatDuration(remaining)}`;
+      };
+      compute();
+      if(countdownTimer) clearInterval(countdownTimer);
+      countdownTimer=setInterval(compute,1000);
+    }
+    function stopCountdownTicker(){
+      const label=document.getElementById('countdown_label');
+      if(countdownTimer) clearInterval(countdownTimer);
+      countdownTimer=null;
+      label.textContent='Countdown: 00:00:00';
+      label.classList.add('hidden');
+    }
+
+    // Analytics per minute
+    function pad2(n){ return String(n).padStart(2,'0'); }
+    function keyMinute(dt){ return `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`; }
+    function minsOfDay(dt){ return dt.getHours()*60 + dt.getMinutes(); }
+
+    function renderCharts(){
+      const events=loadJSON(LS_KEYS.EVENTS,[]);
+      const sleepBuckets = new Map(); // key => minutes slept
+      const offBuckets = new Map();   // key => minutes of day when turned off
+
+      events.forEach(evt=>{
+        const start = new Date(evt.startedAt);
+        const k = keyMinute(start);
+        if(evt.turnedOffAt){
+          const end = new Date(evt.turnedOffAt);
+          const minutes = Math.max(1, Math.round((end - start)/60000));
+          sleepBuckets.set(k, (sleepBuckets.get(k)||0) + minutes);
+          offBuckets.set(k, minsOfDay(end));
+        } else {
+          if(!sleepBuckets.has(k)) sleepBuckets.set(k, 0);
+        }
+      });
+
+      const sleepKeys = Array.from(sleepBuckets.keys()).sort();
+      const offKeys = Array.from(offBuckets.keys()).sort();
+
+      Highcharts.chart('sleep_chart_container',{
+        chart:{ type:'column', backgroundColor:'transparent' },
+        title:{ text:null }, credits:{ enabled:false }, legend:{ enabled:false },
+        xAxis:{ categories: sleepKeys, labels:{ rotation:0, style:{ fontSize:'10px' } }, tickInterval: Math.max(1, Math.floor(sleepKeys.length/8)), lineColor:'#e0e0e0' },
+        yAxis:{ title:{ text:'Minutes' }, gridLineColor:'#f0f0f0', min:0 },
+        series:[{ name:'Sleep', data: sleepKeys.map(k=>sleepBuckets.get(k)), color:'#FFA93B', borderRadius:3 }],
+        tooltip:{ formatter(){ return `${this.x}<br/>Sleep: <b>${this.y} min</b>`; } }
+      });
+
+      Highcharts.chart('turn_off_chart_container',{
+        chart:{ type:'spline', backgroundColor:'transparent' },
+        title:{ text:null }, credits:{ enabled:false }, legend:{ enabled:false },
+        xAxis:{ categories: offKeys, labels:{ rotation:0, style:{ fontSize:'10px' } }, tickInterval: Math.max(1, Math.floor(offKeys.length/8)), lineColor:'#e0e0e0' },
+        yAxis:{ title:{ text:'Minutes of day (0–1440)' }, min:0, max:1440, tickInterval:240,
+          labels:{ formatter(){ return `${Math.round(this.value)}m`; } }, gridLineColor:'#f0f0f0' },
+        series:[{ name:'Turn-off time', data: offKeys.map(k=>offBuckets.get(k)), color:'#FF6B6B' }],
+        tooltip:{ formatter(){
+          const mins = this.y;
+          const hh = pad2(Math.floor(mins/60));
+          const mm = pad2(Math.round(mins%60));
+          return `${this.x}<br/>Turned off at: <b>${hh}:${mm}</b> (${Math.round(mins)} min)`;
+        } }
+      });
+    }
+    function clearHistory(){ saveJSON(LS_KEYS.EVENTS,[]); renderCharts(); }
+
+    // Quiz
+    function computeQuizResult(){
+      const names=['q1','q2','q3','q4','q5']; const tally={ angry:0, cheerful:0, free:0 };
+      for(const n of names){ const el=document.querySelector(`input[name="${n}"]:checked`); if(el) tally[el.value]++; }
+      const entries=Object.entries(tally).sort((a,b)=>b[1]-a[1]); const top=entries[0]; if(!top||top[1]===0) return null;
+      const map={ angry:{ title:'Angry Rooster', emoji:'🔥🐓', desc:'Bold and loud.' }, cheerful:{ title:'Cheerful Rooster', emoji:'🌞🐓', desc:'You lift everyone’s mood.' }, free:{ title:'Free Rooster', emoji:'🕊️🐓', desc:'You go at your own pace.' } };
+      const resultKey = top[0]; const res={ type:resultKey, ...map[resultKey], at:Date.now() }; saveJSON(LS_KEYS.QUIZ,res); return res;
+    }
+    function showQuizResult(res){
+      document.getElementById('quiz_result_card').classList.remove('hidden');
+      document.getElementById('quiz_title').textContent=`You are a ${res.title}!`;
+      document.getElementById('quiz_emoji').textContent=res.emoji;
+      document.getElementById('quiz_desc').textContent=res.desc;
+      document.getElementById('quiz_saved_hint').textContent=`Saved: ${new Date(res.at).toLocaleString()}`;
+    }
+
+    // Tabs — Analytics доступна сразу
+    const tabs=['alarm_tab','quiz_tab','analytics_tab'];
+    function switchTab(id){
+      tabs.forEach(t=>document.getElementById(t).classList.toggle('hidden', t!==id));
+      document.querySelectorAll('.nav-btn').forEach(b=>{
+        const active=b.dataset.tab===id;
+        b.classList.toggle('text-brandOrange',active);
+        b.classList.toggle('text-gray-400',!active);
+      });
+      if(id==='analytics_tab') renderCharts();
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded',()=>{
+      setupAudioUnlock();
+
+      loadAvatar(); setupAvatarInputs();
+
+      document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+
+      document.getElementById('hour_slider').addEventListener('input',()=>{ updateDisplayTime(); saveAlarmSettings(loadJSON(LS_KEYS.ALARM)?.enabled); });
+      document.getElementById('minute_slider').addEventListener('input',()=>{ updateDisplayTime(); saveAlarmSettings(loadJSON(LS_KEYS.ALARM)?.enabled); });
+      document.getElementById('volume_slider').addEventListener('input',()=>{ if(masterGain) masterGain.gain.value=parseFloat(document.getElementById('volume_slider').value); saveAlarmSettings(loadJSON(LS_KEYS.ALARM)?.enabled); });
+      updateDisplayTime();
+
+      // Alarm buttons
+      document.getElementById('set_alarm_btn').addEventListener('click',()=>{
+        const s=saveAlarmSettings(true);
+        document.getElementById('alarm_status').textContent=`Alarm set for ${formatHM(s.hour,s.minute)}`;
+        startAlarmWatcher();
+        startCountdownTicker();
+      });
+
+      document.getElementById('cancel_alarm_btn').addEventListener('click',()=>{
+        const sPrev=loadJSON(LS_KEYS.ALARM);
+        saveAlarmSettings(false);
+        document.getElementById('alarm_status').textContent='No alarm set';
+        if(alarmTimer){ clearInterval(alarmTimer); alarmTimer=null; }
+        stopCountdownTicker();
+
+        // Событие cancel
+        const cancelEvt={
+          startedAt: Date.now(),
+          targetTime: sPrev ? formatHM(sPrev.hour, sPrev.minute) : null,
+          turnedOffAt: null,
+          snoozes: 0,
+          type: 'cancel'
+        };
+        addEventToHistory(cancelEvt);
+        renderCharts();
+        switchTab('analytics_tab');
+      });
+
+      // Overlay
+      document.getElementById('snooze_btn').addEventListener('click',handleSnooze);
+      document.getElementById('turn_off_btn').addEventListener('click',turnOffAlarm);
+
+      // Quiz
+      document.getElementById('show_quiz_result_btn').addEventListener('click',()=>{
+        const res=computeQuizResult(); if(!res){ alert('Please answer all 5 questions.'); return; } showQuizResult(res);
+      });
+
+      // Analytics
+      document.getElementById('clear_history_btn').addEventListener('click',()=>{ if(confirm('Clear all history?')) clearHistory(); });
+
+      // Default tab
+      loadAlarmSettings();
+      switchTab('alarm_tab');
+    });
+  </script>
+
+</body></html>
